@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>選別カウンター</title>
+<style>
+:root{
+  --sky:#56c9f2;
+  --sky2:#8ee5f7;
+  --cream:#fff9df;
+  --yellow:#ffd12e;
+  --brown:#4b2416;
+  --green:#31c85b;
+  --green-dark:#0b9c48;
+  --blue:#168bea;
+  --blue-dark:#086bc7;
+  --panel:#ffffff;
+  --muted:#164b75;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;
+  background:linear-gradient(#56c9f2 0 58%,#b9e97c 100%);
+  color:var(--brown);
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif;
+}
+body{padding:12px 12px 28px;overflow-x:hidden}
+button{font:inherit;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:900px;margin:auto;position:relative}
+header{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  min-height:150px;margin:0 0 12px;
+}
+header:before{
+  content:"";position:absolute;left:4%;right:4%;top:48px;height:72px;
+  background:var(--yellow);border-radius:18px 18px 42px 42px;
+  transform:skewY(-2deg);z-index:0;
+}
+.logo{
+  position:absolute;left:3%;top:34px;font-size:clamp(54px,10vw,92px);
+  z-index:2;filter:drop-shadow(0 5px 0 #fff);
+}
+header>div:nth-child(2){position:relative;z-index:3;text-align:center}
+h1{
+  margin:0;font-size:clamp(42px,8vw,76px);line-height:1;
+  font-weight:1000;letter-spacing:.01em;color:var(--brown);
+  text-shadow:0 5px 0 #fff, 0 8px 0 var(--yellow);
+}
+.sub{display:none}
+
+#mainUI{position:relative}
+.card{
+  border:0;border-radius:40px;background:var(--cream);
+  margin:16px 0;padding:18px;
+  box-shadow:0 7px 0 var(--yellow),0 11px 20px rgba(57,91,110,.18);
+}
+.counter-card{
+  min-height:370px;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.counter-card:before,.counter-card:after{
+  content:"";position:absolute;width:60px;height:20px;background:var(--yellow);
+  border-radius:20px;transform:rotate(-28deg);left:7%;top:45%;
+  box-shadow:0 85px 0 var(--yellow),0 170px 0 var(--yellow);
+}
+.counter-card:after{left:auto;right:7%;transform:rotate(28deg)}
+
+.remaining{
+  position:relative;display:inline-block;padding:42px 18px 10px;
+  z-index:2;
+}
+.number{
+  font-size:clamp(220px,44vw,430px);line-height:.75;
+  font-weight:1000;letter-spacing:-.07em;color:var(--brown);
+  -webkit-text-stroke:8px #fff;
+  text-shadow:0 7px 0 var(--yellow);
+}
+.remain-word{
+  position:absolute;left:0;top:0;
+  font-size:clamp(34px,7vw,60px);font-weight:1000;line-height:1;
+  background:var(--yellow);padding:9px 18px;border-radius:28px;
+  box-shadow:0 5px 0 #fff;
+}
+
+.start{
+  width:min(760px,94%);display:block;margin:28px auto 24px;
+  border:6px solid #fff;border-radius:70px;
+  background:linear-gradient(#45db68,#20bd51);color:#fff;
+  font-weight:1000;font-size:clamp(36px,7vw,58px);
+  padding:22px 28px;
+  box-shadow:0 8px 0 var(--green-dark),0 13px 22px rgba(0,0,0,.18);
+  text-shadow:0 3px 0 rgba(0,0,0,.12);
+}
+.start:active{transform:translateY(5px);box-shadow:0 3px 0 var(--green-dark)}
+.start:disabled{opacity:.7}
+
+.count-settings{
+  border:5px solid #69cbe9;border-radius:32px;background:rgba(255,255,255,.96);
+  margin:10px 0 22px;padding:16px 14px 20px;
+  box-shadow:0 6px 0 #8edcf0;
+}
+.count-settings .label{
+  width:max-content;max-width:100%;margin:0 auto 14px;
+  padding:8px 26px;border-radius:28px;background:#bdefff;
+  color:#07518a;text-align:center;font-weight:1000;
+  font-size:clamp(24px,5vw,38px);
+}
+.counts{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:center}
+.count-btn{
+  border:4px solid #cbd4da;border-radius:28px;background:#fff;color:#222;
+  font-weight:1000;font-size:clamp(24px,4.5vw,38px);
+  padding:16px 4px;min-height:82px;
+  box-shadow:0 3px 0 #b6c0c6;
+}
+.count-btn.selected{
+  background:linear-gradient(#2fa5ff,#1385e5);color:#fff;
+  border-color:#086bc7;box-shadow:0 4px 0 #0861ad;
+}
+.status,.hint{display:none}
+
+.finish{
+  display:none;text-align:center;padding:38px 12px 22px;
+  min-height:75vh;align-content:center;
+}
+.finish.show{display:grid;justify-items:center}
+.popcorn{
+  font-size:clamp(220px,52vw,430px);line-height:.8;
+  filter:drop-shadow(0 10px 8px rgba(0,0,0,.2));
+}
+.finish-title{
+  font-size:clamp(70px,15vw,130px);font-weight:1000;
+  margin:18px 0;color:var(--brown);
+  text-shadow:0 5px 0 #fff,0 9px 0 var(--yellow);
+}
+.finish-sub{font-size:clamp(24px,5vw,38px);font-weight:900;color:#fff}
+.home{
+  border:5px solid #fff;border-radius:55px;background:var(--green);
+  color:#fff;font-weight:1000;font-size:clamp(25px,5vw,38px);
+  padding:17px 34px;margin-top:24px;
+  box-shadow:0 6px 0 var(--green-dark);
+}
+.hidden-settings{display:none}
+
+@media(max-width:620px){
+  body{padding:8px 8px 22px}
+  header{min-height:116px}
+  header:before{top:38px;height:58px}
+  .logo{left:1%;top:25px;font-size:42px}
+  h1{font-size:clamp(31px,8vw,48px);text-shadow:0 3px 0 #fff,0 6px 0 var(--yellow)}
+  .card{border-radius:30px;padding:10px}
+  .counter-card{min-height:280px}
+  .number{-webkit-text-stroke:5px #fff;text-shadow:0 5px 0 var(--yellow)}
+  .remain-word{font-size:28px;padding:7px 12px}
+  .remaining{padding-top:34px}
+  .start{font-size:34px;padding:18px 18px;border-width:5px}
+  .count-settings{border-width:4px;border-radius:26px;padding:12px 8px 16px}
+  .count-settings .label{font-size:24px;padding:7px 18px}
+  .counts{gap:7px}
+  .count-btn{min-height:62px;border-radius:20px;font-size:22px;border-width:3px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🍿</div>
+    <div>
+      <h1>選別カウンター</h1>
+      <div class="sub">ポップコーンの選別回数をカウントします</div>
+    </div>
+  </header>
+
+  <section id="mainUI">
+    <div class="card counter-card">
+      <div class="remaining">
+        <div id="number" class="number">10</div>
+        <div class="remain-word">残り</div>
+      </div>
+    </div>
+
+    <button id="startBtn" class="start">▶ スタート</button>
+
+    <div class="count-settings">
+      <div class="label">選別回数設定</div>
+      <div class="counts">
+        <button class="count-btn selected" data-count="10">10</button>
+        <button class="count-btn" data-count="15">15</button>
+        <button class="count-btn" data-count="20">20</button>
+        <button class="count-btn" data-count="25">25</button>
+        <button class="count-btn" data-count="30">30</button>
+      </div>
+    </div>
+
+    <div class="card status" aria-hidden="true">
+      <span id="message"></span><span id="dot" class="dot"></span>
+    </div>
+  </section>
+
+  <section id="finishUI" class="finish">
+    <div class="popcorn" aria-label="ポップコーン">🍿</div>
+    <div class="finish-title">おわり！</div>
+    <div class="finish-sub">たくさん選別できました！</div>
+    <button id="homeBtn" class="home">⌂ はじめに戻る</button>
+  </section>
+
+  <!-- 教員向け調整値は画面には表示しません -->
+  <div class="hidden-settings" aria-hidden="true">
+    <input id="sensitivity" value="1.8">
+    <input id="interval" value="0.9">
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // 教員向けの内部設定（画面には表示しません）
+  const MOTION_THRESHOLD = 1.8;     // 揺れ感度
+  const MIN_INTERVAL_MS = 900;      // 振動間の最短時間（0.9秒）
+
+  let initial = 10;
+  let remaining = 10;
+  let running = false;
+  let lastCountAt = 0;
+  let lastMagnitude = 0;
+  let motionHandler = null;
+  let audioCtx = null;
+
+  const numberEl = document.getElementById("number");
+  const messageEl = document.getElementById("message");
+  const dotEl = document.getElementById("dot");
+  const startBtn = document.getElementById("startBtn");
+  const homeBtn = document.getElementById("homeBtn");
+  const mainUI = document.getElementById("mainUI");
+  const finishUI = document.getElementById("finishUI");
+
+  function updateNumber() {
+    numberEl.textContent = remaining;
+  }
+
+  function prepareAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+    } catch(e) {}
+  }
+
+  function playFinishAlarm() {
+    // スタート操作でAudioContextを準備しておき、終了時に短い通知音を鳴らす
+    try {
+      if (!audioCtx) prepareAudio();
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      [0, 0.28, 0.56, 0.84, 1.12].forEach((offset, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = [523, 659, 784, 659, 1047][i];
+        gain.gain.setValueAtTime(0.0001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.38, now + offset + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.14);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.22);
+      });
+    } catch(e) {}
+  }
+
+  function finish() {
+    running = false;
+    remaining = 0;
+    updateNumber();
+    if (motionHandler) {
+      window.removeEventListener("devicemotion", motionHandler);
+      motionHandler = null;
+    }
+    mainUI.style.display = "none";
+    finishUI.classList.add("show");
+    playFinishAlarm();
+  }
+
+  function countOne() {
+    const now = performance.now();
+    if (!running || now - lastCountAt < MIN_INTERVAL_MS) return;
+    lastCountAt = now;
+    remaining = Math.max(0, remaining - 1);
+    updateNumber();
+
+    if (remaining === 0) {
+      finish();
+    }
+  }
+
+  function magnitude(a) {
+    const x = Number(a.x) || 0;
+    const y = Number(a.y) || 0;
+    const z = Number(a.z) || 0;
+    return Math.sqrt(x*x + y*y + z*z);
+  }
+
+  function handleMotion(event) {
+    if (!running) return;
+
+    const a = event.acceleration || event.accelerationIncludingGravity;
+    if (!a) return;
+
+    const m = magnitude(a);
+    const delta = Math.abs(m - lastMagnitude);
+    lastMagnitude = m;
+
+    // 連続的な小さな動きより、明確なピークを検出
+    if (delta >= MOTION_THRESHOLD) countOne();
+  }
+
+  async function requestSensorPermission() {
+    if (typeof DeviceMotionEvent === "undefined") {
+      throw new Error("DeviceMotionEvent unavailable");
+    }
+    if (typeof DeviceMotionEvent.requestPermission === "function") {
+      const result = await DeviceMotionEvent.requestPermission();
+      if (result !== "granted") throw new Error("permission denied");
+    }
+  }
+
+  async function start() {
+    prepareAudio();
+    if (remaining === 0) remaining = initial;
+    startBtn.disabled = true;
+    messageEl.textContent = "センサーを準備しています…";
+    dotEl.className = "dot";
+
+    try {
+      await requestSensorPermission();
+
+      if (motionHandler) window.removeEventListener("devicemotion", motionHandler);
+      motionHandler = handleMotion;
+      window.addEventListener("devicemotion", motionHandler, {passive:true});
+
+      running = true;
+      lastCountAt = performance.now();
+      lastMagnitude = 0;
+      messageEl.textContent = "ケースを揺らしてください";
+      dotEl.className = "dot ok";
+      startBtn.textContent = "● 計測中";
+    } catch(error) {
+      running = false;
+      messageEl.textContent = "センサーを使えません";
+      dotEl.className = "dot";
+      alert("iPadの動きセンサーを利用できません。\\nSafariでこのページを開き、「スタート」を押して許可してください。\\n※HTTPSで公開されたページで使用してください。");
+    } finally {
+      startBtn.disabled = false;
+    }
+  }
+
+  function resetHome() {
+    running = false;
+    if (motionHandler) {
+      window.removeEventListener("devicemotion", motionHandler);
+      motionHandler = null;
+    }
+    remaining = initial;
+    updateNumber();
+    finishUI.classList.remove("show");
+    mainUI.style.display = "";
+    messageEl.textContent = "スタートを押してください";
+    dotEl.className = "dot";
+    startBtn.textContent = "▶ スタート";
+  }
+
+  document.querySelectorAll(".count-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (running) return;
+      document.querySelectorAll(".count-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      initial = Number(btn.dataset.count);
+      remaining = initial;
+      updateNumber();
+    });
+  });
+
+  startBtn.addEventListener("click", start);
+  homeBtn.addEventListener("click", resetHome);
+  updateNumber();
+})();
+</script>
+</body>
+</html>
